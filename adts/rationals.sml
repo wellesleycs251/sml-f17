@@ -51,7 +51,7 @@ end
 
 (* Can ascribe any of the 3 signatures above.  We choose to use the
    Abstract Data Type. *)
-structure Rational :> RATIONAL (* :> RATIONAL *) = 
+structure Rational :> RATIONAL = 
 struct
 
   (* Invariant 1: all denominators > 0

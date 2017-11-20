@@ -9,7 +9,7 @@ sig
 
 end
 
-structure MyMathLib :> MATHLIB =
+structure MyMathLib :> MATHLIB  =
 struct
     fun fact 0 = 1
       | fact x = x * fact (x - 1)

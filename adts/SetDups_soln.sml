@@ -54,8 +54,7 @@ sig
     (* Construct the intersection of two sets. *)
     val intersection : ''a t -> ''a t -> ''a t
 
-    (* Construct the difference of two sets
-       (all elements in the first set but not in the second.) *)
+    (* Construct the symmetric difference of two sets. *)
     val difference : ''a t -> ''a t -> ''a t
 
     (* Construct a set from a list of elements.
@@ -107,20 +106,20 @@ structure ListSet (* :> SET *) = struct
 			 
     fun member x ys = List.exists (fn y => x = y) ys
 
-    fun insert x ys = if member x ys then ys else x :: ys			
+    fun insert x ys = x :: ys			
 
     fun delete x ys = List.filter (fn y => x <> y) ys
 
     (* Like listToSet, use insert to avoid dups, but start with ys, not empty *)
     (* fun union xs ys = foldl (fn (x,set) => insert x set) ys xs *)
-    fun union xs ys = xs @ (List.filter (fn y => not (member y xs)) ys)
+    fun union xs ys = xs @ ys
 				  
     fun intersection xs ys = List.filter (fn x => member x ys) xs
 				   
     fun difference xs ys = List.filter (fn x => not (member x ys)) xs				  
 
     (* Use repeated insert to remove duplicates *) 			    
-    fun fromList xs = foldl (fn (x,set) => insert x set) empty xs
+    fun fromList xs = xs
 
     fun toList xs = xs
 

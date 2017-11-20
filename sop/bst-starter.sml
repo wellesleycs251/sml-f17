@@ -1,18 +1,28 @@
 (* Binary search trees on integers *)
 (* Uses the bintree datatype *)
 
-use "bintree-soln.sml";
+(* use "bintree-soln.sml"; *)
 
-fun singleton v = ()
+fun singleton v = Node(Leaf, v, Leaf)
 
-fun insert x Leaf = ()
-  | insert x (t as (Node(l,v,r))) = ()
+fun insert x Leaf = singleton x
+  | insert x (t as (Node(l,v,r))) =
+    if x = v then
+	t
+    else if x < v then
+	Node(insert x l, v, r)
+    else (* x > v *)
+	Node(l, v, insert x r)
 
 fun listToTree xs = (* Hint: use foldl *)
-  ()
+  foldl (fn (elt, tree) => insert elt tree) Leaf xs
 
-fun member x Leaf = ()
-  | member x (Node(l,v,r)) = ()
+
+fun member x Leaf = false
+  | member x (Node(l,v,r)) =
+    (x = v)
+    orelse (x < v andalso member x l)
+    orelse (x > v andalso member x r)
 
     
 (* Test cases *)								     
