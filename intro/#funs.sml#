@@ -1,0 +1,13 @@
+fun sumBetween lo hi =
+  if lo > hi then
+      0
+  else
+      lo + sumBetween (lo+1) hi
+
+fun app_3_5 f = f 3 5
+
+fun make_linear a b x = a*x + b
+				  
+
+		  
+	   
