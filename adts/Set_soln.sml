@@ -54,7 +54,8 @@ sig
     (* Construct the intersection of two sets. *)
     val intersection : ''a t -> ''a t -> ''a t
 
-    (* Construct the symmetric difference of two sets. *)
+    (* Construct the difference of two sets
+       (all elements in the first set but not in the second.) *)
     val difference : ''a t -> ''a t -> ''a t
 
     (* Construct a set from a list of elements.
