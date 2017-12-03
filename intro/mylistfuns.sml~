@@ -1,2 +1,0 @@
-fun incList [] = []
-  | incList (n :: ns) = (n+1) :: (incList ns)
