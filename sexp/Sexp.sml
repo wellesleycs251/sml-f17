@@ -43,7 +43,7 @@ datatype sexp = Int of int
     | isEqual (Chr c1, Chr c2) = (c1 = c2)
     | isEqual (Sym s1, Sym s2) = (s1 = s2)
     | isEqual (Seq sexps1, Seq sexps2) =
-      (length sexps1) = (length sexps2) andalso 
+      (List.length sexps1) = (List.length sexps2) andalso 
       List.all isEqual (ListPair.zip(sexps1,sexps2))
     | isEqual  _ = false (* sexps without the same tag aren't equal *)
 			    

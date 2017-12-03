@@ -26,13 +26,13 @@ val divRem = Intex(5, BinApp(Add,
 exception EvalError of string
 
 fun run (Intex(numargs, exp)) args =
-  if numargs <> length args
+  if numargs <> List.length args
   then raise EvalError "Mismatch between expected and actual number of args"
   else eval exp args
 
 and eval (Int i) args = i
   | eval (Arg index) args = 
-    if (index <= 0) orelse (index > length args)
+    if (index <= 0) orelse (index > List.length args)
     then raise EvalError "Arg index out of bounds"
     else List.nth(args, index-1)
   | eval (BinApp(binop, exp1, exp2)) args =
@@ -132,7 +132,7 @@ fun testRun' pgmSexpString argsSexpString =
 and sexpStringToIntList str =
     let val sexp = Sexp.stringToSexp str
     in case sexp of
-	   Sexp.Seq xs => map sexpToInt xs
+	   Sexp.Seq xs => List.map sexpToInt xs
 	 | _  => raise SexpError("expected sexp sequence but got", sexp)
     end
 
@@ -141,7 +141,7 @@ and sexpToInt (Sexp.Int i) = i
 
 
 val avgTest2 = testRun' "(intex 2 (/ (+ ($ 1) ($ 2)) 2))" "(5 15)"
-val f2cTest2 = map (testRun' "(intex 1 (/ (* (- ($ 1) 32) 5) 9))")
+val f2cTest2 = List.map (testRun' "(intex 1 (/ (* (- ($ 1) 32) 5) 9))")
 		   ["(-40)", "(0)", "(32)", "(98)", "(212)"]
 			   
 
@@ -190,11 +190,11 @@ val f2cTest2 = map (testRun' "(intex 1 (/ (* (- ($ 1) 32) 5) 9))")
 	    in case sexp of 
 		   Sexp.Seq [Sexp.Sym "#quit"] => println "Moriturus te saluto!"
 		 | Sexp.Seq ((Sexp.Sym "#args") :: intxs) => 
-		   let val args = map sexpToInt intxs
+		   let val args = List.map sexpToInt intxs
 		   in loop args (* install args as new default arguments *)
 		   end
 		 | Sexp.Seq ((Sexp.Sym "#run") :: pgmx :: intxs) => 
-		   let val _ = println (Int.toString (run (getPgm pgmx) (map sexpToInt intxs)))
+		   let val _ = println (Int.toString (run (getPgm pgmx) (List.map sexpToInt intxs)))
 			       handle EvalError s => println ("Error: " ^ s)
 				    | SyntaxError s => println ("Error: " ^ s)
 				    | Fail s => println ("Error: " ^ s)

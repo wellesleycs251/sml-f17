@@ -67,7 +67,7 @@ structure StringSetList :> STRING_SET = struct
     fun isEmpty [] = true
       | isEmpty _  = false
       
-    fun size xs = length xs
+    fun size xs = List.length xs
 		       
     fun member x ys = List.exists (fn y => y=x) ys
 			 
@@ -136,7 +136,7 @@ val s1DifferenceS2 = difference s1 s2
 val s2DifferenceS1 = difference s2 s1
 val intersectionDiffs = intersection s1DifferenceS2 s2DifferenceS1
 val sets = [s1, s2, s1UnionS2, s1IntersectionS2, s1DifferenceS2, s2DifferenceS1, intersectionDiffs]
-val toLists = map toList sets
-val toStrings = map toString sets		  
+val toLists = List.map toList sets
+val toStrings = List.map toString sets		  
 *)	       
 					    

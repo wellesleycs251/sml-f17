@@ -105,7 +105,7 @@ fun testRun' pgmSexpString argsSexpString =
 and sexpStringToIntList str =
     let val sexp = Sexp.stringToSexp str
     in case sexp of
-	   Sexp.Seq xs => map sexpToInt xs
+	   Sexp.Seq xs => List.map sexpToInt xs
 	 | _  => raise SexpError("expected sexp sequence but got", sexp)
     end
 
@@ -114,6 +114,6 @@ and sexpToInt (Sexp.Int i) = i
 
 val avgTest2 = testRun' "(intex 2 (/ (+ ($ 1) ($ 2)) 2))" "(5 15)"
 
-val f2cTest2 = map (testRun' "(intex 1 (/ (* (- ($ 1) 32) 5) 9))")
-		   ["(-40)", "(0)", "(32)", "(98)", "(212)"] 
+val f2cTest2 = List.map (testRun' "(intex 1 (/ (* (- ($ 1) 32) 5) 9))")
+			["(-40)", "(0)", "(32)", "(98)", "(212)"] 
 
