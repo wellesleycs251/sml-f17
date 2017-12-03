@@ -57,7 +57,7 @@ structure Valex = struct
     | valueToSexp (String s) = Str s
     | valueToSexp (Symbol s) = Seq [Sym "sym", Sym s]
     | valueToSexp (List []) = Sym "#e" (* special case *)
-    | valueToSexp (List xs) = Seq (Sym "list" :: (map valueToSexp xs))
+    | valueToSexp (List xs) = Seq (Sym "list" :: (List.map valueToSexp xs))
 
   (* val valueToString : value -> string *)
   fun valueToString (Int i) = if i < 0
@@ -66,7 +66,7 @@ structure Valex = struct
     | valueToString v = sexpToString (valueToSexp v)
 
   (* val valuesToString : value list -> string *)
-  fun valuesToString vs = sexpToString (Seq (map valueToSexp vs))
+  fun valuesToString vs = sexpToString (Seq (List.map valueToSexp vs))
 
   (************************************************************
    Dynamic type checking helper functions
@@ -216,7 +216,7 @@ structure Valex = struct
 
   ] 
 
-  val primopEnv = Env.make (map (fn (Primop(name,_)) => name) primops) primops
+  val primopEnv = Env.make (List.map (fn (Primop(name,_)) => name) primops) primops
 
   fun isPrimop name = case Env.lookup name primopEnv of SOME _ => true | None => false
 
@@ -231,7 +231,7 @@ structure Valex = struct
     let val sexp' = desugarRules sexp in 
 	if Sexp.isEqual(sexp',sexp) 
         then case sexp of
-		 Seq sexps => Seq (map desugar sexps)
+		 Seq sexps => Seq (List.map desugar sexps)
                | _ => sexp
 	else desugar sexp'
     end
@@ -268,10 +268,10 @@ structure Valex = struct
 		 Sym listVar,
 		 Seq (Sym "list" :: defnxs),
 		 Seq [Sym "bindseq",
-		      Seq (map (fn (name, index) =>
-				   Seq[Sym name,
-				       Seq [Sym "nth", Sexp.Int index, Sym listVar]])
-			       (ListPair.zip(names, Utils.range 1 (1 + (length names))))),
+		      Seq (List.map (fn (name, index) =>
+					Seq[Sym name,
+					    Seq [Sym "nth", Sexp.Int index, Sym listVar]])
+				    (ListPair.zip(names, Utils.range 1 (1 + (List.length names))))),
 		      bodyx]]
 	  end
 	(* list desugarings *)
@@ -291,14 +291,14 @@ structure Valex = struct
 	| Seq [Sym "quote", Sym s] => Seq [Sym "sym", Sym s]
 	(* (quote (x1 ... xn)) => (list (quote x1) ... (quote xn)) *)
 	| Seq [Sym "quote", Seq xs] => 
-          Seq (Sym "list" :: (map (fn x => Seq[Sym "quote", x]) xs))
+          Seq (Sym "list" :: (List.map (fn x => Seq[Sym "quote", x]) xs))
 
 	| _ => sexp (* doesn't match a rule, so unchanged *)
 
   (* parse bindings of the form ((<name_1> <defnx_1>) ... (<name_n> <defnx_n>))
      into ([name_1,...,name_n], [defnx_1, ..., defnx_n]) *)
   and parseBindings bindingxs = 
-      ListPair.unzip (map (fn (Seq[Sym name, defnx]) => (name, defnx)
+      ListPair.unzip (List.map (fn (Seq[Sym name, defnx]) => (name, defnx)
   		           | bindingx => raise (SyntaxError ("ill-formed bindpar binding"
 							     ^ (sexpToString bindingx))))
 			  bindingxs)
@@ -316,13 +316,13 @@ structure Valex = struct
 
   (* val sexpToPgm : Sexp.sexp -> pgm *)
   fun sexpToPgm (Seq [Sym "valex", Seq formals, bodyx]) =
-      Valex(map symToString formals, sexpToExp bodyx)
+      Valex(List.map symToString formals, sexpToExp bodyx)
     | sexpToPgm (Seq [Sym "bindex", Seq formals, bodyx]) =
       (* Handle Bindex programs as well *)
-      Valex(map symToString formals, sexpToExp bodyx)
+      Valex(List.map symToString formals, sexpToExp bodyx)
     | sexpToPgm (Seq [Sym "intex", Sexp.Int n, bodyx]) =
       (* Handle Intex programs as well *)
-      Valex(map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 n),
+      Valex(List.map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 n),
             sexpToExp bodyx)
     | sexpToPgm sexp = raise (SyntaxError ("invalid Valex program: " ^ (sexpToString sexp)))
 
@@ -350,7 +350,7 @@ structure Valex = struct
     | sexpToExp' (sexp as (Seq (Sym p :: randxs))) =
       (case findPrimop p of
 	  SOME(prim) => PrimApp(prim, (* includes both name and primitive function! *)
-				map sexpToExp' randxs)
+				List.map sexpToExp' randxs)
        | NONE => raise (SyntaxError ("invalid Valex expression due to unknown primop "
 				     ^ p ^ ": "
                                      ^ (sexpToString sexp))))
@@ -378,13 +378,13 @@ structure Valex = struct
 
   (* val pgmToSexp : pgm -> Sexp.sexp *)
   fun pgmToSexp (Valex(fmls, e)) =
-    Seq [Sym "valex", Seq(map (fn s => Sym s) fmls), expToSexp e]
+    Seq [Sym "valex", Seq(List.map (fn s => Sym s) fmls), expToSexp e]
 
   (* val expToSexp : exp -> Sexp.sexp *)
   and expToSexp (Lit v) = valueToSexp v
     | expToSexp (Var s) = Sym s
     | expToSexp (PrimApp (rator, rands)) =
-      Seq (Sym (primopName rator) :: map expToSexp rands)
+      Seq (Sym (primopName rator) :: List.map expToSexp rands)
     | expToSexp (Bind(name,defn,body)) =
       Seq [Sym "bind", Sym name, expToSexp defn, expToSexp body]
     | expToSexp (If(tst,thn,els)) =
@@ -421,7 +421,7 @@ structure Valex = struct
   (* val freeVarsExps : exp list -> S.t *)
   (* Returns the free variables of a list of expressions *)
   and freeVarsExps es = 
-      foldr (fn (fvs, ans) => (S.union fvs ans)) S.empty (map freeVarsExp es)
+      List.foldr (fn (fvs, ans) => (S.union fvs ans)) S.empty (List.map freeVarsExp es)
 
   (* val varCheck : pgm -> unit *)
   and varCheck pgm = 

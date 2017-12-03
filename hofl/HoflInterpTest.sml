@@ -124,14 +124,14 @@ structure HoflTestEntries = struct
      to the form (<ints>, HoflTestEntries.Err <string>) *)
 
   fun translateValexEntries entries = 
-    map (fn (name,pgmString,inouts) => 
-          (name,pgmString,
-	   map (fn (args,ans) => 
-                  (case ans of
-                     ValexTestEntries.Val v -> (args, Val (valexToHoflVal v))
-                   | ValexTestEntries.Err s -> (args, Err s)))
-                inouts))
-	 entries
+    List.map (fn (name,pgmString,inouts) => 
+		 (name,pgmString,
+		  map (fn (args,ans) => 
+			  (case ans of
+			       ValexTestEntries.Val v -> (args, Val (valexToHoflVal v))
+			     | ValexTestEntries.Err s -> (args, Err s)))
+                      inouts))
+	     entries
  
   and valexToHoflVal v = 
     case v of
@@ -140,7 +140,7 @@ structure HoflTestEntries = struct
     | Valex.Char c => Hofl.Char c
     | Valex.String s => Hofl.String s
     | Valex.Symbol s => Hofl.Symbol s
-    | Valex.List xs => Hofl.List (map valexToHoflVal xs)
+    | Valex.List xs => Hofl.List (List.map valexToHoflVal xs)
 
   val entries = (translateValexEntries ValexTestEntries.entries) @ hoflEntries
 

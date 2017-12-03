@@ -10,11 +10,11 @@ open Valex
 
 (* val run : Valex.pgm -> int list -> valu *)
 fun run (Valex(fmls,body)) ints = 
-  let val flen = length fmls
-      val ilen = length ints 
+  let val flen = List.length fmls
+      val ilen = List.length ints 
   in 
       if flen = ilen then 
-          eval body (Env.make fmls (map (fn i => Int i) ints))
+          eval body (Env.make fmls (List.map (fn i => Int i) ints))
       else 
           raise (EvalError ("Program expected " ^ (Int.toString flen)
                             ^ " arguments but got " ^ (Int.toString ilen)))
@@ -27,7 +27,7 @@ and eval (Lit v) env = v
 	 SOME(v) => v
        | NONE => raise (EvalError("Unbound variable: " ^ name)))
   | eval (PrimApp(primop, rands)) env =
-    (primopFunction primop) (map (Utils.flip2 eval env) rands)
+    (primopFunction primop) (List.map (Utils.flip2 eval env) rands)
   | eval (Bind(name,defn,body)) env =
     eval body (Env.bind name (eval defn env) env)
   | eval (If(tst,thn,els)) env =
@@ -102,9 +102,9 @@ fun repl () =
 		(* sexpToExp performs both the desugaring of desugar and the bindpar desugaring *)
 		loop env)
              | Sexp.Seq ((Sexp.Sym "#args") :: bindingxs) => 
-	       let val (names, ints) = ListPair.unzip (map sexpToSymIntPair bindingxs)
+	       let val (names, ints) = ListPair.unzip (List.map sexpToSymIntPair bindingxs)
 	       in 
-		   loop (Env.make names (map (fn i => Int i) ints))
+		   loop (Env.make names (List.map (fn i => Int i) ints))
 	       end
 	     | Sexp.Seq ((Sexp.Sym "#run") :: pgmx :: intxs) => 
 	       let val _ = println (valueToString (run (getPgm pgmx) (List.map sexpToInt intxs)))

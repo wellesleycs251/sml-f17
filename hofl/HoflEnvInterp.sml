@@ -8,11 +8,11 @@ open Hofl
 
 (* val run : Hofl.pgm -> int list -> valu *)
 fun run (Hofl(fmls,body)) ints = 
-  let val flen = length fmls
-      val ilen = length ints 
+  let val flen = List.length fmls
+      val ilen = List.length ints 
   in 
       if flen = ilen then 
-          eval body (Env.make fmls (map (fn i => Int i) ints))
+          eval body (Env.make fmls (List.map (fn i => Int i) ints))
       else 
           raise (EvalError ("Program expected " ^ (Int.toString flen)
                             ^ " arguments but got " ^ (Int.toString ilen)))
@@ -25,7 +25,7 @@ and eval (Lit v) env = v
 	 SOME(v) => v
        | NONE => raise (EvalError("Unbound variable: " ^ name)))
   | eval (PrimApp(primop, rands)) env =
-    (primopFunction primop) (map (Utils.flip2 eval env) rands)
+    (primopFunction primop) (List.map (Utils.flip2 eval env) rands)
   | eval (If(tst,thn,els)) env =
     (case eval tst env of
 	       Bool b => if b then eval thn env else eval els env
@@ -40,8 +40,8 @@ and eval (Lit v) env = v
          (Env.fix (* magic to peform knot-tying for recursive definitions *)
 	      (fn e =>
                   (Env.bindAllThunks names 
-                                     (map (fn defn => (fn () => eval defn e))
-                                          defns)
+                                     (List.map (fn defn => (fn () => eval defn e))
+                                               defns)
                                      env)))
 
 and apply (Fun(fml,body,env)) arg = eval body (Env.bind fml arg env)
@@ -132,8 +132,8 @@ fun repl () =
 	       in loop bindings
 	       end
 	     | Sexp.Seq ((Sexp.Sym "def" | Sexp.Sym "load") :: _) => 
-	      let val newBindings = map (fn (name,defnx) => (name, sexpToExp defnx))
-  	 				(declToBindings sexp)
+	      let val newBindings = List.map (fn (name,defnx) => (name, sexpToExp defnx))
+  	 				     (declToBindings sexp)
 				    handle SyntaxError s => (println ("SyntaxError: " ^ s); [])
 					 | Sexp.IllFormedSexp s => (println ("SexpError: " ^ s); [])
 					 | Fail s => (println ("Failure: " ^ s); [])

@@ -40,9 +40,9 @@ structure Bindex = struct
 
   (* val sexpToPgm : Sexp.sexp -> pgm *)
   fun sexpToPgm (Seq [Sym "bindex", Seq formals, body]) =
-      Bindex(map symToString formals, sexpToExp body)
+      Bindex(List.map symToString formals, sexpToExp body)
     | sexpToPgm (Seq [Sym "intex", Sexp.Int n, body]) = 
-      Bindex(map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
+      Bindex(List.map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
 		 sexpToExp body)
     | sexpToPgm sexp = raise (SyntaxError ("invalid Bindex program: "
 					   ^ (sexpToString sexp)))
@@ -82,7 +82,7 @@ structure Bindex = struct
 
   (* val pgmToSexp : pgm -> Sexp.sexp *)
   fun pgmToSexp (Bindex(fmls, body)) = 
-    Seq [Sym "bindex", Seq(map (fn s => Sym s) fmls), expToSexp body]
+    Seq [Sym "bindex", Seq(List.map (fn s => Sym s) fmls), expToSexp body]
 
   (* val expToSexp : exp -> Sexp.sexp *)
   and expToSexp (Int i) = Sexp.Int i
@@ -131,9 +131,9 @@ structure Bindex = struct
 
   (* val freeVarsExps : exp list -> S.t *)
   (* Returns the free variables of a list of expressions *)
-  and freeVarsExps exps = foldr (fn (s1,s2) => S.union s1 s2)
-				S.empty
-				(map freeVarsExp exps)
+  and freeVarsExps exps = List.foldr (fn (s1,s2) => S.union s1 s2)
+				     S.empty
+				     (List.map freeVarsExp exps)
 
   (* val varCheck : pgm -> bool *)
   and varCheck pgm = S.isEmpty (freeVarsPgm pgm)

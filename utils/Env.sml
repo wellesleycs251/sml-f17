@@ -22,9 +22,9 @@ val empty = []
 
 fun bind name valu env = (name, valu) :: env
 
-fun bindAll names vals env = foldr (fn ((n,v),e) => bind n v e)
-				   env
-				   (ListPair.zip(names,vals))
+fun bindAll names vals env = List.foldr (fn ((n,v),e) => bind n v e)
+					env
+					(ListPair.zip(names,vals))
 
 fun make names vals = bindAll names vals empty
 			      
@@ -37,7 +37,7 @@ fun lookup name env =
 
 fun remove name env = List.filter (fn (n,_) => n <> name) env
 				  
-fun removeAll names env = foldr (fn (n,e) => remove n e) env names
+fun removeAll names env = List.foldr (fn (n,e) => remove n e) env names
 				
 fun merge env1 env2 = env1 @ env2
 

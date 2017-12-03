@@ -59,7 +59,7 @@ structure Hofl = struct
     | valueToSexp (String s) = Str s
     | valueToSexp (Symbol s) = Seq [Sym "sym", Sym s]
     | valueToSexp (List []) = Sym "#e" (* special case *)
-    | valueToSexp (List xs) = Seq (Sym "list" :: (map valueToSexp xs))
+    | valueToSexp (List xs) = Seq (Sym "list" :: (List.map valueToSexp xs))
     | valueToSexp (Fun _) = Sym "<fun>" (*** New in HOFL ***)
 
   (* val valueToString : value -> string *)
@@ -69,7 +69,7 @@ structure Hofl = struct
     | valueToString v = sexpToString (valueToSexp v)
 
   (* val valuesToString : value list -> string *)
-  fun valuesToString vs = sexpToString (Seq (map valueToSexp vs))
+  fun valuesToString vs = sexpToString (Seq (List.map valueToSexp vs))
 
   (************************************************************
    Dynamic type checking helper functions
@@ -247,7 +247,7 @@ structure Hofl = struct
 
   ] 
 
-  val primopEnv = Env.make (map (fn (Primop(name,_)) => name) primops) primops
+  val primopEnv = Env.make (List.map (fn (Primop(name,_)) => name) primops) primops
 
   fun isPrimop name = case Env.lookup name primopEnv of SOME _ => true | None => false
 
@@ -260,10 +260,10 @@ structure Hofl = struct
   (* parse bindings of the form ((<name_1> <defnx_1>) ... (<name_n> <defnx_n>))
      into ([name_1,...,name_n], [defnx_1, ..., defnx_n]) *)
   fun parseBindings bindingxs = 
-      ListPair.unzip (map (fn (Seq[Sym name, defnx]) => (name, defnx)
-  		           | bindingx => raise (SyntaxError ("ill-formed bindpar binding"
-							     ^ (sexpToString bindingx))))
-			  bindingxs)
+      ListPair.unzip (List.map (fn (Seq[Sym name, defnx]) => (name, defnx)
+  		               | bindingx => raise (SyntaxError ("ill-formed bindpar binding"
+								 ^ (sexpToString bindingx))))
+			       bindingxs)
 
   (* Incremental rule-based desugaring *)				 
   fun desugar sexp = 
@@ -274,11 +274,11 @@ structure Hofl = struct
 	  Seq [Sym "bindrec", Seq bindingxs, bodyx] =>
 	    let val (names,defnxs) = parseBindings bindingxs
 	    in Seq [Sym "bindrec",
-		    Seq (map (fn(name,defn) => Seq [Sym name, desugar defn])
-			     (ListPair.zip(names,defnxs))),
+		    Seq (List.map (fn(name,defn) => Seq [Sym name, desugar defn])
+				  (ListPair.zip(names,defnxs))),
 		    desugar bodyx]
 	    end
-	      | Seq sexps => Seq (map desugar sexps)
+	      | Seq sexps => Seq (List.map desugar sexps)
               | _ => sexp
 	else desugar sexp'
     end
@@ -310,7 +310,7 @@ structure Hofl = struct
 	(* Hofl simplifies Valex bindpar desugaring *)
 	| Seq [Sym "bindpar", Seq bindingxs, bodyx] =>
 	  let val (names, defnxs) = parseBindings bindingxs
-	  in Seq (Seq[Sym "fun", Seq(map (fn n => Sym n)  names), bodyx] :: defnxs)
+	  in Seq (Seq[Sym "fun", Seq(List.map (fn n => Sym n)  names), bodyx] :: defnxs)
 	  end
 
 	(* list desugarings *)
@@ -330,7 +330,7 @@ structure Hofl = struct
 	| Seq [Sym "quote", Sym s] => Seq [Sym "sym", Sym s]
 	(* (quote (x1 ... xn)) => (list (quote x1) ... (quote xn)) *)
 	| Seq [Sym "quote", Seq xs] => 
-          Seq (Sym "list" :: (map (fn x => Seq[Sym "quote", x]) xs))
+          Seq (Sym "list" :: (List.map (fn x => Seq[Sym "quote", x]) xs))
 
 	(* Use the "fun" syntax for multiple argument functions (just curried functions) *)
 	| Seq [Sym "fun", Seq [], bodyx] => Seq [Sym "abs", Sym (Utils.fresh "ignore"), bodyx]
@@ -368,20 +368,20 @@ structure Hofl = struct
 
   (* val sexpToPgm : Sexp.sexp -> pgm *)
   fun sexpToPgm (Seq (Sym "hofl" :: Seq formals :: bodyx :: declxs)) =
-    let val (declNames,declExpxs) = ListPair.unzip (List.concat (map declToBindings declxs))
-    in Hofl(map symToString formals, 
-	    Bindrec(declNames, map sexpToExp declExpxs, sexpToExp bodyx))
+    let val (declNames,declExpxs) = ListPair.unzip (List.concat (List.map declToBindings declxs))
+    in Hofl(List.map symToString formals, 
+	    Bindrec(declNames, List.map sexpToExp declExpxs, sexpToExp bodyx))
     end
     (* Handle Valex programs as well *)
     | sexpToPgm (Seq [Sym "valex", Seq formals, bodyx]) =
-      Hofl(map symToString formals, sexpToExp bodyx)
+      Hofl(List.map symToString formals, sexpToExp bodyx)
     | sexpToPgm (Seq [Sym "bindex", Seq formals, bodyx]) =
       (* Handle Bindex programs as well *)
-      Hofl(map symToString formals, sexpToExp bodyx)
+      Hofl(List.map symToString formals, sexpToExp bodyx)
     | sexpToPgm (Seq [Sym "intex", Sexp.Int n, bodyx]) =
       (* Handle Intex programs as well *)
-      Hofl(map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 n),
-            sexpToExp bodyx)
+      Hofl(List.map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 n),
+           sexpToExp bodyx)
     | sexpToPgm sexp = raise (SyntaxError ("invalid Hofl program: " ^ (sexpToString sexp)))
 
   (* val declToBindings: Sexp.sexp -> string * Sexp.sexp *)
@@ -398,7 +398,7 @@ structure Hofl = struct
 
   and declToBindings' (Seq [Sym "def", Sym name, defnx]) = [(name, defnx)]
     | declToBindings' (Seq [Sym "load", Str filename]) =
-      List.concat (map declToBindings (Sexp.fileToSexps filename))
+      List.concat (List.map declToBindings (Sexp.fileToSexps filename))
     | declToBindings' decl = raise (SyntaxError ("ill-formed decl: " ^ (sexpToString decl)))
 
   and desugarDecl (Seq [Sym "def", Seq (Sym name :: formals), bodyx]) = 
@@ -426,13 +426,13 @@ structure Hofl = struct
     | sexpToExp' (Seq [Sym "abs", Sym fml, bodyx]) = Abs(fml, sexpToExp' bodyx)
     | sexpToExp' (Seq [Sym "bindrec", Seq bindingxs, bodyx]) = 
       let val (names, defnxs) = parseBindings bindingxs
-      in Bindrec(names, map sexpToExp' defnxs, sexpToExp' bodyx)
+      in Bindrec(names, List.map sexpToExp' defnxs, sexpToExp' bodyx)
       end
     (* This clause must be last! *)
     | sexpToExp' (sexp as (Seq (ratorx :: randxs))) =
       (case ratorx of
 	   (Sym p) => if isPrimop p
-		      then PrimApp(valOf (findPrimop p), map sexpToExp' randxs)
+		      then PrimApp(valOf (findPrimop p), List.map sexpToExp' randxs)
 		      else (case randxs of
 				[randx] => App(sexpToExp' ratorx, sexpToExp' randx)
 			      | _  => raise (SyntaxError ("invalid Hofl application: "
@@ -464,21 +464,21 @@ structure Hofl = struct
 
   (* val pgmToSexp : pgm -> Sexp.sexp *)
   fun pgmToSexp (Hofl(fmls, e)) =
-    Seq [Sym "hofl", Seq(map (fn s => Sym s) fmls), expToSexp e]
+    Seq [Sym "hofl", Seq(List.map (fn s => Sym s) fmls), expToSexp e]
 
   (* val expToSexp : exp -> Sexp.sexp *)
   and expToSexp (Lit v) = valueToSexp v
     | expToSexp (Var s) = Sym s
     | expToSexp (PrimApp (rator, rands)) =
-      Seq (Sym (primopName rator) :: map expToSexp rands)
+      Seq (Sym (primopName rator) :: List.map expToSexp rands)
     | expToSexp (If(tst,thn,els)) =
       Seq [Sym "if", expToSexp tst, expToSexp thn, expToSexp els]
     | expToSexp (Abs(fml,body)) = Seq [Sym "abs", Sym fml, expToSexp body]
     | expToSexp (App(rator,rand)) = Seq [expToSexp rator, expToSexp rand]
     | expToSexp (Bindrec(names,defns,body)) =
 	Seq [Sym "bindrec",
-	     Seq (map (fn(name,defn) => Seq[Sym name, expToSexp defn])
-		      (ListPair.zip(names,defns))),
+	     Seq (List.map (fn(name,defn) => Seq[Sym name, expToSexp defn])
+			   (ListPair.zip(names,defns))),
 	     expToSexp body]
 
   (* val expToString : exp -> string *)
@@ -513,7 +513,7 @@ structure Hofl = struct
   (* val freeVarsExps : exp list -> S.t *)
   (* Returns the free variables of a list of expressions *)
   and freeVarsExps es = 
-      foldr (fn (fvs, ans) => (S.union fvs ans)) S.empty (map freeVarsExp es)
+      List.foldr (fn (fvs, ans) => (S.union fvs ans)) S.empty (List.map freeVarsExp es)
 
   (* val varCheck : pgm -> unit *)
   and varCheck pgm = 

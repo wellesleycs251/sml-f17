@@ -10,8 +10,8 @@ structure SigmexEnvInterpStarter = struct
 
   (* val run : Sigmex.pgm -> int list -> int *)
   fun run (Sigmex(fmls,body)) ints = 
-    let val flen = length fmls
-	val ilen = length ints 
+    let val flen = List.length fmls
+	val ilen = List.length ints 
     in 
 	if flen = ilen then 
             eval body (Env.make fmls ints)
@@ -103,7 +103,7 @@ structure SigmexEnvInterpStarter = struct
 	    in case sexp of 
 		   Sexp.Seq [Sexp.Sym "#quit"] => println "Moriturus te saluto!"
 		 | Sexp.Seq ((Sexp.Sym "#args") :: bindings) => 
-		   let val (names, ints) = ListPair.unzip (map sexpToSymIntPair bindings)
+		   let val (names, ints) = ListPair.unzip (List.map sexpToSymIntPair bindings)
 		   in loop (Env.make names ints)
 		   end
 		 | Sexp.Seq ((Sexp.Sym "#run") :: pgmx :: intxs) => 

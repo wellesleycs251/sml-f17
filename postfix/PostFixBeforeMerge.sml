@@ -40,14 +40,14 @@ structure PostFix = struct
 
   fun run (PostFix(numargs, cmds)) args =
     if numargs = List.length args
-    then case execCmds cmds (List.map IntVal args) of
+    then case execCmds cmds (map IntVal args) of
 	     (IntVal v) :: _ => v
 	   | (SeqVal v) :: _ => raise ExecError "Command sequence on top of final stack"
 	   | [] => raise ExecError "Empty final stack"
     else raise ExecError "Mismatch between expected and actual number of args"
 
   (* Perform all commands on given stack and return resulting stack *)
-  and execCmds cmds vs = List.foldl (fn (cmd,stk) => execCmd cmd stk) vs cmds
+  and execCmds cmds vs = foldl (fn (cmd,stk) => execCmd cmd stk) vs cmds
 						
   (* Perform command on given stack and return resulting stack *)	
   and execCmd (Int i) vs = (IntVal i) :: vs
@@ -91,12 +91,12 @@ structure PostFix = struct
   exception SyntaxError of string
 
   fun sexpToPgm (Sexp.Seq(Sexp.Sym "postfix" :: Sexp.Int n :: cmdxs)) =
-    PostFix(n, List.map sexpToCmd cmdxs)
+    PostFix(n, map sexpToCmd cmdxs)
     | sexpToPgm sexp = raise (SyntaxError ("invalid PostFix program: "
 					   ^ (Sexp.sexpToString sexp)))
 			     
   and sexpToCmd (Sexp.Int i) = Int i
-    | sexpToCmd (Sexp.Seq cmdxs) = Seq (List.map sexpToCmd cmdxs)
+    | sexpToCmd (Sexp.Seq cmdxs) = Seq (map sexpToCmd cmdxs)
     | sexpToCmd (Sexp.Sym "pop") = Pop
     | sexpToCmd (Sexp.Sym "swap") = Swap
     | sexpToCmd (Sexp.Sym "nget") = Nget
@@ -121,10 +121,10 @@ structure PostFix = struct
    ************************************************************)
 
   fun pgmToSexp (PostFix(n,cmds)) =
-    Sexp.Seq (Sexp.Sym "postfix" :: Sexp.Int n :: List.map cmdToSexp cmds)
+    Sexp.Seq (Sexp.Sym "postfix" :: Sexp.Int n :: map cmdToSexp cmds)
 
   and cmdToSexp (Int i) = Sexp.Int i
-    | cmdToSexp (Seq cmds) = Sexp.Seq (List.map cmdToSexp cmds)
+    | cmdToSexp (Seq cmds) = Sexp.Seq (map cmdToSexp cmds)
     | cmdToSexp Pop = Sexp.Sym "pop"
     | cmdToSexp Swap = Sexp.Sym "swap"
     | cmdToSexp Nget = Sexp.Sym "nget"
@@ -140,9 +140,9 @@ structure PostFix = struct
     | cmdToSexp (Relop Gt) = Sexp.Sym "gt"
 
   and stkvalToSexp (IntVal i) = Sexp.Int i
-    | stkvalToSexp (SeqVal cmds) = Sexp.Seq (List.map cmdToSexp cmds)
+    | stkvalToSexp (SeqVal cmds) = Sexp.Seq (map cmdToSexp cmds)
 
-  and stkToSexp stkvals = Sexp.Seq (List.map stkvalToSexp stkvals)
+  and stkToSexp stkvals = Sexp.Seq (map stkvalToSexp stkvals)
 
   and cmdToString cmd = Sexp.sexpToString (cmdToSexp cmd)
   and pgmToString pgm = Sexp.sexpToString (pgmToSexp pgm)
@@ -185,7 +185,7 @@ val pfSelTest2 = testRun (PostFix(0, [Int 0, Int 7, Int 2, Sel])) []
 val pfSeqTest = testRun (PostFix(0, [Int 4, Int 7, Int 2, Seq [Pop, Swap, Arithop(Sub)]])) []
 val pfExecTest = testRun (PostFix(0, [Int 4, Int 7, Int 2, Seq [Pop, Swap, Arithop(Sub)], Exec])) []
 val pfArgTest = testRun (PostFix(3, [Swap, Arithop(Div), Arithop(Sub)])) [7,2,1]
-val pf1Tests = List.map (testRun pf1) [[3, 5], [3, ~5]]
+val pf1Tests = map (testRun pf1) [[3, 5], [3, ~5]]
 (* expect ["2", "28"] *)
 
 (* error tests *)		   
@@ -216,19 +216,18 @@ fun testRun' pgmSexpString argsSexpString =
 and sexpStringToIntList str =
     let val sexp = Sexp.stringToSexp str
     in case sexp of
-	   Sexp.Seq xs => List.map sexpToInt xs
+	   Sexp.Seq xs => map sexpToInt xs
 	 | _  => raise SexpError("expected sexp sequence but got", sexp)
     end
 
 and sexpToInt (Sexp.Int i) = i
   | sexpToInt sexp = raise SexpError("expected sexp int but got", sexp)
 
-
 val pf1String = "(postfix 2 2 nget 0 gt (sub) (swap 1 nget mul add) sel exec)"
 
 val sosTest = testRun' "(postfix 2 1 nget mul swap 1 nget mul add)" "(3 4)"
 		       
-val pf1StringTests = List.map (testRun' pf1String) ["(3 5)", "(3 -5)"]		    
+val pf1StringTests = map (testRun' pf1String) ["(3 5)", "(3 -5)"]		    
 			   
 
 		   

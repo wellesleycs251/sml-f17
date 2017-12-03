@@ -42,9 +42,9 @@ structure SigmexStarter = struct
 
   (* val sexpToPgm : Sexp.sexp -> pgm *)
   fun sexpToPgm (Seq [Sym "sigmex", Seq formals, body]) =
-      Sigmex(map symToString formals, sexpToExp body)
+      Sigmex(List.map symToString formals, sexpToExp body)
     | sexpToPgm (Seq [Sym "intex", Sexp.Int n, body]) = 
-      Sigmex(map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
+      Sigmex(List.map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
 		 sexpToExp body)
     | sexpToPgm sexp = raise (SyntaxError ("invalid Sigmex program: "
 					   ^ (sexpToString sexp)))
@@ -85,7 +85,7 @@ structure SigmexStarter = struct
 
   (* val pgmToSexp : pgm -> Sexp.sexp *)
   fun pgmToSexp (Sigmex(fmls, body)) = 
-    Seq [Sym "sigmex", Seq(map (fn s => Sym s) fmls), expToSexp body]
+    Seq [Sym "sigmex", Seq(List.map (fn s => Sym s) fmls), expToSexp body]
 
   (* val expToSexp : exp -> Sexp.sexp *)
   and expToSexp (Int i) = Sexp.Int i
@@ -138,7 +138,7 @@ structure SigmexStarter = struct
   (* Returns the free variables of a list of expressions *)
   and freeVarsExps exps = foldr (fn (s1,s2) => S.union s1 s2)
 				S.empty
-				(map freeVarsExp exps)
+				(List.map freeVarsExp exps)
 
   (* val varCheck : pgm -> bool *)
   and varCheck pgm = S.isEmpty (freeVarsPgm pgm)

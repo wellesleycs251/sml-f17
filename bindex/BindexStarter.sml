@@ -40,10 +40,10 @@ structure Bindex = struct
 
   (* val sexpToPgm : Sexp.sexp -> pgm *)
   fun sexpToPgm (Seq [Sym "bindex", Seq formals, body]) =
-      Bindex(map symToString formals, sexpToExp body)
+      Bindex(List.map symToString formals, sexpToExp body)
     | sexpToPgm (Seq [Sym "intex", Sexp.Int n, body]) = 
-      Bindex(map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
-		 sexpToExp body)
+      Bindex(List.map (fn i => "$" ^ (Int.toString i)) (Utils.range 1 (n+1)), 
+	     sexpToExp body)
     | sexpToPgm sexp = raise (SyntaxError ("invalid Bindex program: "
 					   ^ (sexpToString sexp)))
 
@@ -82,7 +82,7 @@ structure Bindex = struct
 
   (* val pgmToSexp : pgm -> Sexp.sexp *)
   fun pgmToSexp (Bindex(fmls, body)) = 
-    Seq [Sym "bindex", Seq(map (fn s => Sym s) fmls), expToSexp body]
+    Seq [Sym "bindex", Seq(List.map (fn s => Sym s) fmls), expToSexp body]
 
   (* val expToSexp : exp -> Sexp.sexp *)
   and expToSexp (Int i) = Sexp.Int i

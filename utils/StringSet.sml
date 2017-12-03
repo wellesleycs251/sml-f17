@@ -111,7 +111,7 @@ structure StringSetList :> STRING_SET = struct
 
     (* This is insertion sort. 
        Should really use n log n sort here! *)			
-    fun fromList xs = foldl (fn (x,set) => insert x set) empty xs
+    fun fromList xs = List.foldl (fn (x,set) => insert x set) empty xs
 			   
     fun toList xs = xs
 			 

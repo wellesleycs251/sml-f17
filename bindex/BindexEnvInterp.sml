@@ -12,8 +12,8 @@ structure BindexEnvInterp = struct
 
   (* val run : Bindex.pgm -> int list -> int *)
   fun run (Bindex(fmls,body)) ints = 
-    let val flen = length fmls
-	val ilen = length ints 
+    let val flen = List.length fmls
+	val ilen = List.length ints 
     in 
 	if flen = ilen then 
             eval body (Env.make fmls ints)
@@ -105,7 +105,7 @@ structure BindexEnvInterp = struct
 	    in case sexp of 
 		   Sexp.Seq [Sexp.Sym "#quit"] => println "Moriturus te saluto!"
 		 | Sexp.Seq ((Sexp.Sym "#args") :: bindingxs) => 
-		   let val (names, ints) = ListPair.unzip (map sexpToSymIntPair bindingxs)
+		   let val (names, ints) = ListPair.unzip (List.map sexpToSymIntPair bindingxs)
 		   in loop (Env.make names ints)
 		   end
 		 | Sexp.Seq ((Sexp.Sym "#run") :: pgmx :: intxs) => 
