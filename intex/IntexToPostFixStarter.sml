@@ -10,20 +10,14 @@ struct
 
 (* intexToPostFix: Intex.pgm -> PostFix.pgm *)
 fun intexToPostFix (Intex.Intex(numargs, exp)) =
-  PostFix.PostFix(numargs, expToCmds exp 0)
-    (* 0 is a depth argument that statically tracks 
-       how many values are on stack above the arguments *)
+  PostFix.PostFix(numargs, expToCmds exp 17)
 
 (* expToCmds: exp -> int -> cmd list *)
-and expToCmds (Intex.Int i) depth = [PostFix.Int i]
-  | expToCmds (Intex.Arg index) depth = [PostFix.Int (index + depth), PostFix.Nget]
-   (* specified argument is on stack at index + depth *)
-  | expToCmds (Intex.BinApp(binop,exp1,exp2)) depth =
-    (expToCmds exp1 depth) (* 1st operand is at same depth as whole binapp *)
-    @ (expToCmds exp2 (depth + 1)) (* for 2nd operand, add 1 to depth to account for 1st operand *)
-    @ [PostFix.Arithop (binopToArithop binop)]
+and expToCmds (Intex.Int i) depth = []
+  | expToCmds (Intex.Arg index) depth = []
+  | expToCmds (Intex.BinApp(binop,exp1,exp2)) depth = []
 
-(* binopToArithop : binop -> arithop *)	  
+(* binopToArithop : binop -> arithop *)
 and binopToArithop Intex.Add = PostFix.Add
   | binopToArithop Intex.Sub = PostFix.Sub
   | binopToArithop Intex.Mul = PostFix.Mul

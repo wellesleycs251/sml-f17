@@ -12,7 +12,7 @@ datatype pgm = Intex of int * exp
 
 val sqr = Intex(1, BinApp(Mul, Arg 1, Arg 1))
 val avg = Intex(2, BinApp(Div, BinApp(Add, Arg 1, Arg 2), Int 2))
-(* val f2c = Flesh this Farenheit to Celsisu converter! *)
+(* val f2c = Flesh this Farenheit to Celsius converter! *)
 val divRem = Intex(5, BinApp(Add,
 			     BinApp(Mul,
 				    BinApp(Div, Arg 1, Arg 2),
@@ -20,12 +20,12 @@ val divRem = Intex(5, BinApp(Add,
 			     BinApp(Rem, Arg 4, Arg 5)))
 
 fun run (Intex(numargs, exp)) args =
-  eval exp args
+  17
 
-and eval (Int i) args = i
-  | eval (Arg index) args = List.nth(args, index-1)
+and eval (Int i) args = 17
+  | eval (Arg index) args = 17
   | eval (BinApp(binop, exp1, exp2)) args =
-      (binopToFun binop) (eval exp1 args, eval exp2 args)
+      17
 
 and binopToFun Add = op+
   | binopToFun Mul = op*

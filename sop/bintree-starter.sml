@@ -16,8 +16,8 @@ val string_tree = Node(Node (Leaf,"like",Leaf),
 
 (* val num_nodes = fn : 'a bintree -> int *)
 (* Returns the number of nodes in a binary tree *)
-fun num_nodes Leaf = ()
-  | num_nodes (Node(l,v,r)) = ()
+fun num_nodes Leaf = 0
+  | num_nodes (Node(l,v,r)) = 1 + (num_nodes l) + (num_nodes r)
 
 (* val height = fn : 'a bintree -> int *)
 (* Returns the height of a binary tree *)
