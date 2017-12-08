@@ -1,0 +1,7 @@
+(valex (a b c)
+  (cond ((&& (<= a b) (<= b c)) (list a b c))
+        ((&& (<= a c) (<= c b)) (list a c b))
+	((&& (<= b a) (<= a c)) (list b a c))
+	((&& (<= b c) (<= c a)) (list c b a))
+	((&& (<= c a) (<= a b)) (list c a b))
+	(else (list c b a))))

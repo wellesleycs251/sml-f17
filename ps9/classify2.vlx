@@ -1,0 +1,5 @@
+(valex (a b c d)
+  (classify (* c d)
+    ((a (- (/ (+ a b) 2) 1)) (* a c))
+    (((+ (/ (+ a b) 2) 1) b) (* b d))
+    (otherwise (- d c))))

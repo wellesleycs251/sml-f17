@@ -1,0 +1,5 @@
+(valex (a)
+  (classify a
+    ((0 9) a)
+    (((/ 20 a) 20) (+ a 1))
+    (otherwise (/ 100 (- a 5)))))
