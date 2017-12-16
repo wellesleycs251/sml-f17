@@ -21,21 +21,21 @@ structure Hofl = struct
    Abstract Syntax
    ************************************************************)
 
-  type var = string
+  type ident = string
 
-  datatype pgm = Hofl of var list * exp (* param names, body *)
+  datatype pgm = Hofl of ident list * exp (* param names, body *)
 
   and exp =
       Lit of value (* integer, boolean, character, string, symbol, and list literals *)
-    | Var of var (* variable reference *)
+    | Var of ident (* variable reference *)
     | PrimApp of primop * exp list (* primitive application with rator, rands *)
     (* Bind no longer needed! 
-     | Bind of var * exp * exp (* bind name to value of defn in body *) *)
+     | Bind of ident * exp * exp (* bind name to value of defn in body *) *)
     | If of exp * exp * exp (* conditional with test, then, else *)
     (*** New in HOFL ***)
-    | Abs of var * exp (* function abstraction *)
+    | Abs of ident * exp (* function abstraction *)
     | App of exp * exp (* function application *)
-    | Bindrec of var list * exp list * exp (* recursive bindings *)
+    | Bindrec of ident list * exp list * exp (* recursive bindings *)
 
   and value = (* use value rather than val because val is an SML keyword *)
       Int of int 
@@ -44,10 +44,10 @@ structure Hofl = struct
     | String of string
     | Symbol of string
     | List of value list (* Recursively defined value *)
-    | Fun of var * exp * value Env.env (*** New in HOFL ***
+    | Fun of ident * exp * value Env.env (*** New in HOFL ***
                                             Closure value combines abstraction and environment *)
 
-  and primop = Primop of var * (value list -> value)
+  and primop = Primop of ident * (value list -> value)
 
   fun primopName (Primop(name,_)) = name
   fun primopFunction (Primop(_,fcn)) = fcn

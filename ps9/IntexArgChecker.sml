@@ -49,6 +49,6 @@ val all = passes @ fails
 (* Uncomment the following to check. 
    The expected result in both cases is 
    [true, true, true, true, false, false] *)		       
-(* val topDownChecks = map checkTopDown all *)
-(* val bottomUpChecks = map checkBottomUp all *)		       			
+(* val topDownChecks = List.map checkTopDown all *)
+(* val bottomUpChecks = List.map checkBottomUp all *)		       			
 
